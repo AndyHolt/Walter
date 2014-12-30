@@ -1,4 +1,4 @@
-# Finance
+# Walter
 
 Track finances and produce reports.
 
