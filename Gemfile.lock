@@ -1,0 +1,12 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    json (1.8.1)
+    watson-ruby (1.6.3)
+      json
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  watson-ruby (~> 1.6.3)
