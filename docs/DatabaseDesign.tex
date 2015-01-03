@@ -48,8 +48,21 @@
 
 \section{Database design}\label{database-design}
 
-Database records financial transactions with the following data: - Date
-- Payee - Category - Description - Amount
+Database records financial transactions with the following data:
+
+\begin{itemize}
+\itemsep1pt\parskip0pt\parsep0pt
+\item
+  Date
+\item
+  Payee
+\item
+  Category
+\item
+  Description
+\item
+  Amount
+\end{itemize}
 
 It would be useful to track individual items within a transaction, for
 example if shopping, as different purchases in a single transaction may
@@ -80,46 +93,53 @@ The columns are:
 Column name & Data type & Description
 \\\addlinespace
 \midrule\endhead
-transaction\_id & INT & Unique ID for transaction (also serves as
+transaction\_id & SERIAL & Unique ID for transaction (also serves as
 primary key)
 \\\addlinespace
 date & DATE & Date of transaction
 \\\addlinespace
-payee\_id & INT & Unique ID of PAYEE (or payer) - relates to PAYEES
-table
+payee\_id & BIGINT UNSIGNED NOT NULL & Unique ID of PAYEE (or payer) -
+relates to PAYEES table
 \\\addlinespace
-description & STRING & Variable length string describing the transaction
+description & VARCHAR(100) & Variable length string describing the
+transaction
 \\\addlinespace
-amount & FLOAT with 2dp & Value of transaction - negative for expense,
+amount & DECIMAL(10,2) & Value of transaction - negative for expense,
 positive for income
 \\\addlinespace
 \bottomrule
 \end{longtable}
 
-\subsection{Transaction Breakdown
-Table}\label{transaction-breakdown-table}
+The SERIAL data type is an alias for BIGINT UNSIGNED NOT NULL
+AUTO\_INCREMENT UNIQUE and is therefore very useful for PRIMARY KEYS.
 
-The transactions table has 2 purposes: 1. For transactions with multiple
-purchases or items, these can be broken down into the sub-transactions
-(e.g.~different items while shopping). 2. Transactions may be
-categorised using the breakdown table. The breakdown table relates
-transactions to categories, through sub-purchases if these exist. This
-allows different items in a single purchase to receive different
-categories. The table has this form:
+The DECIMAL(10,2) data type is an ``exact'' floating point number with
+10 digits, two decimal places (meaning up to 8 digits before the decimal
+place).
+
+\subsection{Transaction Item Table}\label{transaction-item-table}
+
+The transaction item table has 2 purposes: 1. For transactions with
+multiple purchases or items, these can be broken down into the
+sub-transactions (e.g.~different items while shopping). 2. Transactions
+may be categorised using the breakdown table. The breakdown table
+relates transactions to categories, through sub-purchases if these
+exist. This allows different items in a single purchase to receive
+different categories. The table has this form:
 
 \begin{longtable}[c]{@{}lllll@{}}
 \toprule\addlinespace
-breakdown\_transaction\_id & transaction\_id & description & amount &
+transaction\_item\_id & transaction\_id & description & amount &
 category\_id
 \\\addlinespace
 \midrule\endhead
-1 & 1 & Train ticket: Aberdeen to Cambridge & 46.85 & 1
+1 & 1 & Train ticket: Aberdeen to Cambridge & 46.85 & 3
 \\\addlinespace
-2 & 2 & Apples & 3.00 & 2
+2 & 2 & Apples & 3.00 & 4
 \\\addlinespace
-3 & 2 & Milk & 1.00 & 3
+3 & 2 & Milk & 1.00 & 5
 \\\addlinespace
-4 & 2 & Bread & 1.42 & 3
+4 & 2 & Bread & 1.42 & 5
 \\\addlinespace
 \bottomrule
 \end{longtable}
@@ -131,17 +151,18 @@ The columns are:
 Column name & Data type & Description
 \\\addlinespace
 \midrule\endhead
-breakdown\_transaction\_id & INT & Unique ID for transaction (PRIMARY
-KEY)
+transaction\_item\_id & SERIAL & Unique ID for transaction (PRIMARY KEY)
 \\\addlinespace
-transaction\_id & INT & Links to transaction in TRANSACTIONS table
+transaction\_id & BIGINT UNSIGNED NOT NULL & Links to transaction in
+TRANSACTIONS table
 \\\addlinespace
-description & STRING & Variable length string describing item
+description & VARCHAR(100) & Variable length string describing item
 \\\addlinespace
-amount & FLOAT with 2dp & Value of item - negative for expense, positive
+amount & DECIMAL(10,2) & Value of item - negative for expense, positive
 for income
 \\\addlinespace
-category id & INT & Unique ID of category - relates to CATEGORIES table
+category id & BIGINT UNSIGNED NOT NULL & Unique ID of category - relates
+to CATEGORIES table
 \\\addlinespace
 \bottomrule
 \end{longtable}
@@ -170,9 +191,9 @@ The columns are:
 Column name & Data type & Description
 \\\addlinespace
 \midrule\endhead
-payee\_id & INT & Unique ID for Payee (PRIMARY KEY)
+payee\_id & SERIAL & Unique ID for Payee (PRIMARY KEY)
 \\\addlinespace
-payee\_name & STRING & Name of payee
+payee\_name & VARCHAR(100) & Name of payee
 \\\addlinespace
 \bottomrule
 \end{longtable}
@@ -181,19 +202,22 @@ payee\_name & STRING & Name of payee
 
 The categories table contains categories/tags for the transactions.
 These allow spending to be tracked by different budget areas. Categories
-are grouped hierarchically by colons, so ``food:fruit'' and
-``food:staple'' are both subcategories of the ``food'' category.
+are grouped hierarchically through parent categories.
 
-\begin{longtable}[c]{@{}ll@{}}
+\begin{longtable}[c]{@{}lll@{}}
 \toprule\addlinespace
-category\_id & category
+category\_id & parent\_id & category\_name
 \\\addlinespace
 \midrule\endhead
-1 & travel:train
+1 & NULL & travel
 \\\addlinespace
-2 & food:fruit
+2 & NULL & food
 \\\addlinespace
-3 & food:staple
+3 & 1 & train
+\\\addlinespace
+4 & 2 & fruit
+\\\addlinespace
+5 & 2 & staple
 \\\addlinespace
 \bottomrule
 \end{longtable}
@@ -205,9 +229,11 @@ The columns are:
 Column name & Data type & Description
 \\\addlinespace
 \midrule\endhead
-category\_id & INT & Unique ID for category (PRIMARY KEY)
+category\_id & SERIAL & Unique ID for category (PRIMARY KEY)
 \\\addlinespace
-category & STRING & Category name
+parent\_id & BIGINT UNSIGNED & ID of parent category
+\\\addlinespace
+category\_name & VARCHAR(100) & Category name
 \\\addlinespace
 \bottomrule
 \end{longtable}

@@ -1,6 +1,7 @@
 # Database design
 
 Database records financial transactions with the following data:
+
 - Date
 - Payee
 - Category
@@ -22,14 +23,19 @@ The transactions table is the core of the database, and has a form as following:
 
 The columns are:
 
-| Column name    | Data type      | Description                                                      |
-|----------------|----------------|------------------------------------------------------------------|
-| transaction_id | INT            | Unique ID for transaction (also serves as primary key)           |
-| date           | DATE           | Date of transaction                                              |
-| payee_id       | INT            | Unique ID of PAYEE (or payer) - relates to PAYEES table          |
-| description    | STRING         | Variable length string describing the transaction                |
-| amount         | FLOAT with 2dp | Value of transaction - negative for expense, positive for income |
+| Column name    | Data type                | Description                                                      |
+|----------------|--------------------------|------------------------------------------------------------------|
+| transaction_id | SERIAL                   | Unique ID for transaction (also serves as primary key)           |
+| date           | DATE                     | Date of transaction                                              |
+| payee_id       | BIGINT UNSIGNED NOT NULL | Unique ID of PAYEE (or payer) - relates to PAYEES table          |
+| description    | VARCHAR(100)             | Variable length string describing the transaction                |
+| amount         | DECIMAL(10,2)            | Value of transaction - negative for expense, positive for income |
 
+The SERIAL data type is an alias for BIGINT UNSIGNED NOT NULL AUTO_INCREMENT
+UNIQUE and is therefore very useful for PRIMARY KEYS.
+
+The DECIMAL(10,2) data type is an "exact" floating point number with 10 digits,
+two decimal places (meaning up to 8 digits before the decimal place).
 
 ## Transaction Item Table
 
@@ -42,7 +48,6 @@ The transaction item table has 2 purposes:
    categories.
 The table has this form:
 
-<!-- [todo] - change categories to ints and use categories table -->
 | transaction_item_id | transaction_id | description                         | amount | category_id |
 |---------------------|----------------|-------------------------------------|--------|-------------|
 |                   1 |              1 | Train ticket: Aberdeen to Cambridge |  46.85 |           3 |
@@ -52,13 +57,13 @@ The table has this form:
 
 The columns are:
 
-| Column name         | Data type      | Description                                               |
-|---------------------|----------------|-----------------------------------------------------------|
-| transaction_item_id | INT            | Unique ID for transaction (PRIMARY KEY)                   |
-| transaction_id      | INT            | Links to transaction in TRANSACTIONS table                |
-| description         | STRING         | Variable length string describing item                    |
-| amount              | FLOAT with 2dp | Value of item - negative for expense, positive for income |
-| category id         | INT            | Unique ID of category - relates to CATEGORIES table       |
+| Column name         | Data type                | Description                                               |
+|---------------------|--------------------------|-----------------------------------------------------------|
+| transaction_item_id | SERIAL                   | Unique ID for transaction (PRIMARY KEY)                   |
+| transaction_id      | BIGINT UNSIGNED NOT NULL | Links to transaction in TRANSACTIONS table                |
+| description         | VARCHAR(100)             | Variable length string describing item                    |
+| amount              | DECIMAL(10,2)            | Value of item - negative for expense, positive for income |
+| category id         | BIGINT UNSIGNED NOT NULL | Unique ID of category - relates to CATEGORIES table       |
 
 ## Payees table
 
@@ -72,10 +77,10 @@ unique IDs in the transactions table.
 
 The columns are:
 
-| Column name | Data type | Description                       |
-|-------------|-----------|-----------------------------------|
-| payee_id    | INT       | Unique ID for Payee (PRIMARY KEY) |
-| payee_name  | STRING    | Name of payee                     |
+| Column name | Data type    | Description                       |
+|-------------|--------------|-----------------------------------|
+| payee_id    | SERIAL       | Unique ID for Payee (PRIMARY KEY) |
+| payee_name  | VARCHAR(100) | Name of payee                     |
 
 ## Categories table
 
@@ -83,18 +88,18 @@ The categories table contains categories/tags for the transactions. These allow
 spending to be tracked by different budget areas. Categories are grouped
 hierarchically through parent categories.
 
-| category_id | category | parent_id |
-|-------------|----------|-----------|
-|           1 | travel   |      NULL |
-|           2 | food     |      NULL |
-|           3 | train    |         1 |
-|           4 | fruit    |         2 |
-|           5 | staple   |         2 |
+| category_id | parent_id | category_name |
+|-------------|-----------|---------------|
+|           1 |      NULL | travel        |
+|           2 |      NULL | food          |
+|           3 |         1 | train         |
+|           4 |         2 | fruit         |
+|           5 |         2 | staple        |
 
 The columns are:
 
-| Column name | Data type | Description                          |
-|-------------|-----------|--------------------------------------|
-| category_id | INT       | Unique ID for category (PRIMARY KEY) |
-| category    | STRING    | Category name                        |
-| parent_id   | INT       | ID of parent category                |
+| Column name   | Data type       | Description                          |
+|---------------|-----------------|--------------------------------------|
+| category_id   | SERIAL          | Unique ID for category (PRIMARY KEY) |
+| parent_id     | BIGINT UNSIGNED | ID of parent category                |
+| category_name | VARCHAR(100)    | Category name                        |
