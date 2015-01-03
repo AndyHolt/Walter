@@ -1,0 +1,215 @@
+\documentclass[]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+    \usepackage{xltxtra,xunicode}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Mapping=tex-text,Scale=MatchLowercase}
+  \newcommand{\euro}{€}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{\usepackage{microtype}}{}
+\usepackage{longtable,booktabs}
+\ifxetex
+  \usepackage[setpagesize=false, % page size defined by xetex
+              unicode=false, % unicode breaks when used with xetex
+              xetex]{hyperref}
+\else
+  \usepackage[unicode=true]{hyperref}
+\fi
+\hypersetup{breaklinks=true,
+            bookmarks=true,
+            pdfauthor={},
+            pdftitle={},
+            colorlinks=true,
+            citecolor=blue,
+            urlcolor=blue,
+            linkcolor=magenta,
+            pdfborder={0 0 0}}
+\urlstyle{same}  % don't use monospace font for urls
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\setcounter{secnumdepth}{0}
+
+
+\begin{document}
+
+\section{Database design}\label{database-design}
+
+Database records financial transactions with the following data: - Date
+- Payee - Category - Description - Amount
+
+It would be useful to track individual items within a transaction, for
+example if shopping, as different purchases in a single transaction may
+have very different categories. A separate purchase table should
+therefore be used.
+
+\subsection{Transactions Table}\label{transactions-table}
+
+The transactions table is the core of the database, and has a form as
+following:
+
+\begin{longtable}[c]{@{}lllll@{}}
+\toprule\addlinespace
+transaction\_id & date & payee\_id & description & amount
+\\\addlinespace
+\midrule\endhead
+1 & 2015-01-02 & 1 & Train ticket & 46.85
+\\\addlinespace
+2 & 2015-01-03 & 2 & Shopping & 5.42
+\\\addlinespace
+\bottomrule
+\end{longtable}
+
+The columns are:
+
+\begin{longtable}[c]{@{}lll@{}}
+\toprule\addlinespace
+Column name & Data type & Description
+\\\addlinespace
+\midrule\endhead
+transaction\_id & INT & Unique ID for transaction (also serves as
+primary key)
+\\\addlinespace
+date & DATE & Date of transaction
+\\\addlinespace
+payee\_id & INT & Unique ID of PAYEE (or payer) - relates to PAYEES
+table
+\\\addlinespace
+description & STRING & Variable length string describing the transaction
+\\\addlinespace
+amount & FLOAT with 2dp & Value of transaction - negative for expense,
+positive for income
+\\\addlinespace
+\bottomrule
+\end{longtable}
+
+\subsection{Transaction Breakdown
+Table}\label{transaction-breakdown-table}
+
+The transactions table has 2 purposes: 1. For transactions with multiple
+purchases or items, these can be broken down into the sub-transactions
+(e.g.~different items while shopping). 2. Transactions may be
+categorised using the breakdown table. The breakdown table relates
+transactions to categories, through sub-purchases if these exist. This
+allows different items in a single purchase to receive different
+categories. The table has this form:
+
+\begin{longtable}[c]{@{}lllll@{}}
+\toprule\addlinespace
+breakdown\_transaction\_id & transaction\_id & description & amount &
+category\_id
+\\\addlinespace
+\midrule\endhead
+1 & 1 & Train ticket: Aberdeen to Cambridge & 46.85 & 1
+\\\addlinespace
+2 & 2 & Apples & 3.00 & 2
+\\\addlinespace
+3 & 2 & Milk & 1.00 & 3
+\\\addlinespace
+4 & 2 & Bread & 1.42 & 3
+\\\addlinespace
+\bottomrule
+\end{longtable}
+
+The columns are:
+
+\begin{longtable}[c]{@{}lll@{}}
+\toprule\addlinespace
+Column name & Data type & Description
+\\\addlinespace
+\midrule\endhead
+breakdown\_transaction\_id & INT & Unique ID for transaction (PRIMARY
+KEY)
+\\\addlinespace
+transaction\_id & INT & Links to transaction in TRANSACTIONS table
+\\\addlinespace
+description & STRING & Variable length string describing item
+\\\addlinespace
+amount & FLOAT with 2dp & Value of item - negative for expense, positive
+for income
+\\\addlinespace
+category id & INT & Unique ID of category - relates to CATEGORIES table
+\\\addlinespace
+\bottomrule
+\end{longtable}
+
+\subsection{Payees table}\label{payees-table}
+
+The payees table contains information about payees, which is referenced
+by their unique IDs in the transactions table.
+
+\begin{longtable}[c]{@{}ll@{}}
+\toprule\addlinespace
+payee\_id & payee\_name
+\\\addlinespace
+\midrule\endhead
+1 & National Rail
+\\\addlinespace
+2 & Sainsbury's
+\\\addlinespace
+\bottomrule
+\end{longtable}
+
+The columns are:
+
+\begin{longtable}[c]{@{}lll@{}}
+\toprule\addlinespace
+Column name & Data type & Description
+\\\addlinespace
+\midrule\endhead
+payee\_id & INT & Unique ID for Payee (PRIMARY KEY)
+\\\addlinespace
+payee\_name & STRING & Name of payee
+\\\addlinespace
+\bottomrule
+\end{longtable}
+
+\subsection{Categories table}\label{categories-table}
+
+The categories table contains categories/tags for the transactions.
+These allow spending to be tracked by different budget areas. Categories
+are grouped hierarchically by colons, so ``food:fruit'' and
+``food:staple'' are both subcategories of the ``food'' category.
+
+\begin{longtable}[c]{@{}ll@{}}
+\toprule\addlinespace
+category\_id & category
+\\\addlinespace
+\midrule\endhead
+1 & travel:train
+\\\addlinespace
+2 & food:fruit
+\\\addlinespace
+3 & food:staple
+\\\addlinespace
+\bottomrule
+\end{longtable}
+
+The columns are:
+
+\begin{longtable}[c]{@{}lll@{}}
+\toprule\addlinespace
+Column name & Data type & Description
+\\\addlinespace
+\midrule\endhead
+category\_id & INT & Unique ID for category (PRIMARY KEY)
+\\\addlinespace
+category & STRING & Category name
+\\\addlinespace
+\bottomrule
+\end{longtable}
+
+\end{document}
