@@ -5,7 +5,7 @@
 
 -- select the Walter database
 -- [todo] - allow selection of test database instead
-USE walter;
+USE walter_dev;
 
 -- create payees table
 -- (must be done before transactions for foreign key assignment)

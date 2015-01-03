@@ -4,7 +4,7 @@
 -- Date: Sat 03 Jan 2015 15:55
 
 -- [todo] - delete data from test database
-USE walter;
+USE walter_dev;
 
 DELETE FROM transaction_items WHERE transaction_item_id != 0;
 DELETE FROM categories WHERE parent_id != 'NULL';

@@ -4,7 +4,7 @@
 -- Date: Sat 03 Jan 2015 15:30
 
 -- [todo] - change to populate test database instead of real one
-USE walter;
+USE walter_dev;
 
 INSERT INTO payees
        VALUES (1, 'National Rail'),
