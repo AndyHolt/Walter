@@ -95,6 +95,23 @@ class LedgerTests(unittest.TestCase):
 
         self.assertEqual(actual_result, expected_result)
 
+    def test_add_payee(self):
+        """
+        Ensure a payee is correctly added to the database.
+        """
+        self.ledger.add_payee('Waitrose')
+
+        expected_result = [{'payee_id': 1,
+                            'payee_name': 'National Rail'},
+                           {'payee_id': 2,
+                            'payee_name': "Sainsbury's"},
+                           {'payee_id': 3,
+                            'payee_name': 'Waitrose'}]
+        actual_result = self.ledger.get_payees()
+
+        self.assertEqual(actual_result, expected_result)
+
+
     def test_get_transasctions(self):
         """
         Ensure transactions are correctly recieved from database.

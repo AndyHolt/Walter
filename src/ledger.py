@@ -26,29 +26,127 @@ class Ledger:
         """
         Close connection to database. Must be called when finished.
         """
+        self.dbcon.commit()
         self.dbcon.close()
 
+    def get_cursor(self):
+        """
+        Return a cursor object for use by any method interacting with database.
+        """
+        self.cur = self.dbcon.cursor()
+        return self.cur
+
+    def close_cursor(self, cursor=None):
+        """
+        Close a cursor.
+
+        If cursor is passed, close that cursor. Otherwise, close the default
+        object cursor, self.cur
+
+        Arguments:
+        - `cursor`: Optional cursor to be closed
+        """
+        if cursor != None:
+            cursor.close()
+        else:
+            self.cur.close()
+
+        self.dbcon.commit()
+
+    def reset_auto_increment(self, table_name):
+        """
+        Reset the AUTO_INCREMENT counter for given table.
+
+        Arguments:
+        - `table_name`: table to reset counter of
+        """
+        cur = self.get_cursor()
+
+        # lookup for primary key column name
+        keys = {'categories': 'category_id',
+                'payees': 'payee_id',
+                'transaction_items': 'transaction_item_id',
+                'transactions': 'transaction_id'}
+
+        # get current max value
+        get_max_statement = "SELECT MAX({0}) FROM {1}".format(keys[table_name],
+                                                              table_name)
+        cur.execute(get_max_statement)
+        max_key_value = cur.fetchall()[0][0]
+
+        # reset AUTO_INCREMENT counter
+        reset = "ALTER TABLE {0} AUTO_INCREMENT = {1}".format(table_name,
+                                                              max_key_value+1)
+        cur.execute(reset)
+
+        self.close_cursor()
+
+    def add_payee(self, payee_name):
+        """
+        Add a payee to the database.
+
+        Arguments:
+        - `payee_name`: Name of the payee
+        """
+        # [todo] - add check that payee_name is unique
+
+        # open a cursor
+        cur = self.get_cursor()
+
+        self.reset_auto_increment('payees')
+
+        # add payee with given name
+        add_payee_statement = "INSERT INTO payees " + \
+                              "VALUES ('0', '{0}')".format(payee_name)
+
+        cur.execute(add_payee_statement)
+
+        # close cursor
+        self.close_cursor()
+
+    def get_payees(self):
+        """
+        Return a list of dicts of all payees.
+        """
+        # open a cursor object
+        cur = self.get_cursor()
+
+        # get payees from database
+        cur.execute("SELECT * FROM payees")
+        payees_data = cur.fetchall()
+
+        # convert into a list of payee dictionaries
+        payees_list = []
+        [payees_list.append({'payee_id': payee[0],
+                             'payee_name': payee[1]})
+         for payee in payees_data]
+
+        # close the cursor
+        self.close_cursor()
+
+        return payees_list
 
     def get_transactions(self):
         """
         Return a list of dicts of all transactions.
         """
         # open a cursor object
-        cur = self.dbcon.cursor()
+        cur = self.get_cursor()
 
-        # get data from database
+        # get transactions from database
         cur.execute("SELECT * FROM transactions")
-        data = cur.fetchall()
+        transactions_data = cur.fetchall()
 
         # convert into a dict of values.
-        trans = []
-        [trans.append({'transaction_id': tr[0],
-                       'date': tr[1],
-                       'payee_id': tr[2],
-                       'description': tr[3],
-                       'amount': tr[4]})
-         for tr in data]
+        transactions_list = []
+        [transactions_list.append({'transaction_id': transaction[0],
+                                   'date': transaction[1],
+                                   'payee_id': transaction[2],
+                                   'description': transaction[3],
+                                   'amount': transaction[4]})
+         for transaction in transactions_data]
 
-        cur.close()
+        # close the cursor
+        self.close_cursor()
 
-        return trans
+        return transactions_list
