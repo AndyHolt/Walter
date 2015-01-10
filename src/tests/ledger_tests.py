@@ -83,6 +83,18 @@ class LedgerTests(unittest.TestCase):
         dbcon.commit()
         dbcon.close()
 
+    def test_get_payees(self):
+        """
+        Ensure payees are correctly recieved from database.
+        """
+        expected_result = [{'payee_id': 1,
+                            'payee_name': 'National Rail'},
+                           {'payee_id': 2,
+                            'payee_name': "Sainsbury's"}]
+        actual_result = self.ledger.get_payees()
+
+        self.assertEqual(actual_result, expected_result)
+
     def test_get_transasctions(self):
         """
         Ensure transactions are correctly recieved from database.
@@ -100,6 +112,3 @@ class LedgerTests(unittest.TestCase):
         actual_result = self.ledger.get_transactions()
 
         self.assertEqual(actual_result, expected_result)
-
-if __name__ == '__main__':
-    unittest.main
