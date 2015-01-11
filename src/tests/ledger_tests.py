@@ -111,6 +111,45 @@ class LedgerTests(unittest.TestCase):
 
         self.assertEqual(actual_result, expected_result)
 
+    def test_edit_payee(self):
+        """
+        Test modification of a payee using edit_payee method.
+        """
+        self.ledger.edit_payee(2, 'Tesco')
+
+        expected_result = [{'payee_id': 1,
+                            'payee_name': 'National Rail'},
+                           {'payee_id': 2,
+                            'payee_name': 'Tesco'}]
+        actual_result = self.ledger.get_payees()
+
+        self.assertEqual(actual_result, expected_result)
+
+    def test_delete_payee(self):
+        """
+        Test deletion of a payee using delete_payee method.
+        """
+        # first, add a payee with no associated transactions
+        self.ledger.add_payee('Waitrose')
+        expected_result = [{'payee_id': 1,
+                            'payee_name': 'National Rail'},
+                           {'payee_id': 2,
+                            'payee_name': "Sainsbury's"},
+                           {'payee_id': 3,
+                            'payee_name': 'Waitrose'}]
+        actual_result = self.ledger.get_payees()
+        self.assertEqual(actual_result, expected_result)
+
+        # then delete the new payee to make sure it's gone
+        self.ledger.delete_payee(3)
+
+        expected_result = [{'payee_id': 1,
+                            'payee_name': 'National Rail'},
+                           {'payee_id': 2,
+                            'payee_name': "Sainsbury's"}]
+        actual_result = self.ledger.get_payees()
+
+        self.assertEqual(actual_result, expected_result)
 
     def test_get_transasctions(self):
         """

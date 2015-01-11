@@ -104,6 +104,50 @@ class Ledger:
         # close cursor
         self.close_cursor()
 
+    def edit_payee(self, payee_id, new_payee_name):
+        """
+        Give a payee a new name.
+
+        Arguments:
+        - `payee_id`: payee to be modified
+        - `new_payee_name`: new name for the payee
+        """
+        # [todo] - add check that new_payee_name is unique
+
+        # open a cursor
+        cur = self.get_cursor()
+
+        edit_payee_statement = "UPDATE payees " + \
+                               "SET payee_name='{0}' ".format(new_payee_name) + \
+                               "WHERE payee_id={0}".format(payee_id)
+
+        cur.execute(edit_payee_statement)
+
+        # close the cursor
+        self.close_cursor()
+
+    def delete_payee(self, payee_id):
+        """
+        Remove a payee from the database
+
+        Arguments:
+        - `payee_id`: payee to be deleted
+        """
+        # [todo] - handle deletion failure
+        #   probably best done by catching exception raised if the payee has
+        #   children in transactions table
+
+        # open a cursor
+        cur = self.get_cursor()
+
+        delete_payee_statement = "DELETE FROM payees " + \
+                                 "WHERE payee_id={0}".format(payee_id)
+        cur.execute(delete_payee_statement)
+
+        # close the cursor
+        self.close_cursor()
+
+
     def get_payees(self):
         """
         Return a list of dicts of all payees.
