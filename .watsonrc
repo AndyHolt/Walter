@@ -27,6 +27,10 @@ man/
 *.log
 *.pdf
 Gemfile.lock
+*.pyc
+*.out
+.coverage
+*.coverage
 
 [github_api]
 andyholt
