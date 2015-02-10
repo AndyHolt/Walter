@@ -9,6 +9,7 @@ database.
 # Date: Mon 09 Feb 2015 20:58
 
 import cmd
+import ledger
 
 class WalterShell(cmd.Cmd):
     """
@@ -19,6 +20,23 @@ class WalterShell(cmd.Cmd):
     prompt = 'walter: '
     file = None
 
+    # pre and post loop commands
+    def preloop(self):
+        """
+        Set up prior to entering command loop.
+        """
+        # set up connection to database through ledger object
+        # [todo] - select correct database somehow
+        print('In preloop function.')
+        self.ledger = ledger.Ledger(db_name='walter_dev')
+
+    def postloop(self):
+        """
+        Tear down just before exiting command loop.
+        """
+        # close connection to database through ledger
+        self.ledger.close_connection()
+
     # basic watson commands
     def do_list(self, entity):
         """
@@ -28,12 +46,18 @@ class WalterShell(cmd.Cmd):
         - `entity`: the entity type to list. Valid values are 'commands',
             'transactions', 'payees', 'transaction_items' and 'categories'
         """
+        # set default to transactions
+        if entity == '':
+            entity = 'transactions'
+
         try:
             self.validate_entity('list', entity)
         except entityValidationError as err:
             print(err.message)
         else:
             print("Produce list of all {0}.".format(entity))
+            if entity == 'transactions':
+                print(self.ledger.get_transactions())
 
     def do_add(self, entity):
         """
