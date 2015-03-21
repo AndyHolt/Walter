@@ -10,6 +10,7 @@ database.
 
 import cmd
 import ledger
+from tabulate import tabulate
 
 class WalterShell(cmd.Cmd):
     """
@@ -44,7 +45,7 @@ class WalterShell(cmd.Cmd):
 
         Arguments:
         - `entity`: the entity type to list. Valid values are 'commands',
-            'transactions', 'payees', 'transaction_items' and 'categories'
+            'transactions', 'payees', 'transaction items' and 'categories'
         """
         # set default to transactions
         if entity == '':
@@ -56,9 +57,19 @@ class WalterShell(cmd.Cmd):
             print(err.message)
         else:
             if entity == 'transactions':
-                print(self.ledger.get_transactions())
+                print(tabulate(self.ledger.get_transactions(),
+                               headers="keys", tablefmt="psql"))
             elif entity == 'payees':
-                print(self.ledger.get_payees())
+                print(tabulate(self.ledger.get_payees(),
+                               headers="keys", tablefmt="psql"))
+            elif entity == 'transaction items':
+                print(tabulate(self.ledger.get_items(),
+                               headers="keys", tablefmt="psql"))
+            elif entity == 'categories':
+                print(tabulate(self.ledger.get_categories(),
+                               headers="keys", tablefmt="psql"))
+            else:
+                print('Command not recognised')
 
     def do_add(self, entity):
         """
@@ -122,13 +133,13 @@ class WalterShell(cmd.Cmd):
         - `entity`: recieved entity class
         """
         commands = ['add', 'list', 'edit', 'delete']
-        entities = {'add': ['transaction', 'payee', 'transaction_item',
+        entities = {'add': ['transaction', 'payee', 'transaction item',
                             'category'],
-                    'list': ['transactions', 'payees', 'transaction_items',
+                    'list': ['transactions', 'payees', 'transaction items',
                             'categories'],
-                    'edit': ['transaction', 'payee', 'transaction_item',
+                    'edit': ['transaction', 'payee', 'transaction item',
                              'category'],
-                    'delete': ['transaction', 'payee', 'transaction_item',
+                    'delete': ['transaction', 'payee', 'transaction item',
                                'category'],}
         if command not in commands:
             # [todo] - raise an exception/error here

@@ -5,6 +5,10 @@ Unit tests for WalterShell class.
 # Author: Andy Holt
 # Date: Tue 10 Feb 2015 22:40
 
+# [todo] - don't use ledger at all in this test module.
+#   need to separate unit tests of ledger and shell, can test their combined use
+#   in integration tests, but don't do it in unit tests.
+
 import subprocess
 import unittest
 from mock import MagicMock
@@ -87,6 +91,7 @@ class WalterShellTests(unittest.TestCase):
 
         self.ws.onecmd('list transactions')
         self.ws.ledger.get_transactions.assert_called_with()
+        # [todo] - test display of transactions
 
     def test_list_payees(self):
         """
@@ -103,13 +108,67 @@ class WalterShellTests(unittest.TestCase):
 
         self.ws.onecmd('list payees')
         self.ws.ledger.get_payees.assert_called_with()
+        # [todo] - test display of payees
 
-    # def test_list_transaction_items(self):
-        # [todo] - implement test_list_transaction_items
+    def test_list_transaction_items(self):
+        """
+        Walter Shell `list transaction items` command test.
 
-    # def test_list_categories(self):
-        # [todo] - implement test_list_categories
+        Ensures transaction items are correctly fetched and displayed on `list
+        transaction items` command.
+        """
+        get_items_rtn = [{'transaction_item_id': 1,
+                          'transaction_id': 1,
+                          'description': 'Train ticket: Aberdeen to Cambridge',
+                          'amount': Decimal('46.85'),
+                          'category_id': 3},
+                         {'transaction_item_id': 2,
+                          'transaction_id': 2,
+                          'description': 'Apples',
+                          'amount': Decimal('3.00'),
+                          'category_id': 4},
+                         {'transaction_item_id': 3,
+                          'transaction_id': 2,
+                          'description': 'Milk',
+                          'amount': Decimal('1.00'),
+                          'category_id': 5},
+                         {'transaction_item_id': 4,
+                          'transaction_id': 2,
+                          'description': 'Bread',
+                          'amount': Decimal('1.42'),
+                          'category_id': 5}]
+        self.ws.ledger.get_items = MagicMock(return_value = get_items_rtn)
 
+        self.ws.onecmd('list transaction items')
+        self.ws.ledger.get_items.assert_called_with()
+        # [todo] - test display of transaction items
+
+    def test_list_categories(self):
+        """
+        Walter Shell `list categories` command test.
+
+        Ensures categories are correctly fetched and displayed on `list
+        transaction items` command.
+        """
+        get_cat_rtn = [{'category_id': 1,
+                            'parent_id': None,
+                        'category_name': 'travel'},
+                       {'category_id': 2,
+                        'parent_id': None,
+                        'category_name': 'food'},
+                       {'category_id': 3,
+                        'parent_id': 1,
+                        'category_name': 'train'},
+                       {'category_id': 4,
+                        'parent_id': 2,
+                        'category_name': 'fruit'},
+                       {'category_id': 5,
+                        'parent_id': 2,
+                        'category_name': 'staple'}]
+        self.ws.ledger.get_categories = MagicMock(return_value = get_cat_rtn)
+
+        self.ws.onecmd('list categories')
+        self.ws.ledger.get_categories.assert_called_with()
 
     # def test_list_commands(self):
         # [todo] - impelement test_list_commands
