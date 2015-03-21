@@ -55,9 +55,10 @@ class WalterShell(cmd.Cmd):
         except entityValidationError as err:
             print(err.message)
         else:
-            print("Produce list of all {0}.".format(entity))
             if entity == 'transactions':
                 print(self.ledger.get_transactions())
+            elif entity == 'payees':
+                print(self.ledger.get_payees())
 
     def do_add(self, entity):
         """

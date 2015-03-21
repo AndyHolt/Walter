@@ -1,6 +1,9 @@
 # vagrant files
 .vagrant/
 
+# watson files
+.watsonresults
+
 pip-selfcheck.json
 
 # Byte-compiled / optimized / DLL files
