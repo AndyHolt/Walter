@@ -11,6 +11,7 @@ database.
 import cmd
 import ledger
 from tabulate import tabulate
+import datetime
 
 class WalterShell(cmd.Cmd):
     """
@@ -28,7 +29,6 @@ class WalterShell(cmd.Cmd):
         """
         # set up connection to database through ledger object
         # [todo] - select correct database somehow
-        print('In preloop function.')
         self.ledger = ledger.Ledger(db_name='walter_dev')
 
     def postloop(self):
@@ -79,7 +79,16 @@ class WalterShell(cmd.Cmd):
         - `entity`: the entity type to be added. Valid values are:
             'transaction', 'payee', 'transaction_item' and 'category'
         """
-        print("Add a {0} to the database.".format(entity))
+        # set default behaviour to add a transaction
+        if entity == '':
+            entity = 'transaction'
+
+        try:
+            self.validate_entity('add', entity)
+        except entityValidationError as err:
+            print(err.message)
+        else:
+            self.add_entity(entity)
 
     def do_edit(self, entity):
         """
@@ -157,6 +166,35 @@ class WalterShell(cmd.Cmd):
 
             error_string = ''.join(error_string_l)
             raise entityValidationError(error_string)
+
+    def add_entity(self, entity, tr_date=None, tr_pid=None, tr_desc=None, tr_amt=None,
+                   py_name=None,
+                   ti_trid=None, ti_desc=None, ti_amt=None, ti_catid=None,
+                   ct_name=None, ct_pid=None):
+        """
+        Get values for entity to be added and pass to ledger object.
+        """
+        if entity == 'transaction':
+            if tr_date == None:
+                d_ip = input("Date (format 21-3-2015): ").split('-')
+                tr_date = datetime.date(int(d_ip[2], int(d_ip[1],
+                                        int(d_ip[0]))))
+            if tr_pid == None:
+                tr_pid = int(input("Payee ID: "))
+            if tr_desc == None:
+                tr_desc = input("Description: ")
+            if tr_amt == None:
+                tr_amt = float(input("Amount: "))
+            self.ledger.add_transaction(tr_date, tr_pid, tr_desc, tr_amt)
+        elif entity == 'payee':
+            foo = None
+        elif entity == 'transaction item':
+            foo = None
+        elif entity == 'category':
+            foo = None
+        else:
+            raise entityValidationError('add_entity recieved invalid entity.')
+
 
 class entityValidationError(Exception):
     """

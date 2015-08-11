@@ -174,6 +174,15 @@ class WalterShellTests(unittest.TestCase):
         # [todo] - impelement test_list_commands
 
     # [todo] - implement test_add_transaction
+    def test_add_transaction(self):
+        """
+        Walter Shell `add transaction` command test.
+
+        Ensure correct behaviour is called when adding transaction.
+        """
+        self.ws.add_entity = MagicMock()
+        self.ws.onecmd('add transaction')
+        self.ws.add_entity.assert_called_with('transaction')
 
     # [todo] - implement test_add_payee
 
@@ -196,3 +205,19 @@ class WalterShellTests(unittest.TestCase):
     # [todo] - implement test_delete_transaction_item
 
     # [todo] - implement test_delete_category
+
+    def test_add_entity_transaction(self):
+        """
+        Walter Shell add_entity for transaction test.
+        """
+        self.ws.ledger.add_transaction = MagicMock()
+
+        my_date = datetime.date(2015, 3, 21)
+        my_pid = 1
+        my_desc = "Another train ticket"
+        my_amt = 35.32
+
+        self.ws.add_entity(entity='transaction', tr_date=my_date, tr_pid=my_pid,
+                           tr_desc=my_desc, tr_amt=my_amt)
+
+        self.ws.ledger.add_transaction.assert_called_with(my_date, my_pid, my_desc, my_amt)
